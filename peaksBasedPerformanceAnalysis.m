@@ -1,4 +1,4 @@
-function [avgDist,Sensitivity,FDR,p,slope,r2] = peaksBasedPerformanceAnalysis (Positive,testPnt,margin,Flags)
+function [avgDist,Sensitivity,FDR,p,slope,r2] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
 % testPnt   - Output of algorithm.
@@ -19,7 +19,7 @@ function [avgDist,Sensitivity,FDR,p,slope,r2] = peaksBasedPerformanceAnalysis (P
 % Take off any duplicate values.
 Positive = unique (Positive);
 testPnt = unique (testPnt);
-
+refRR = [diff(Positive) nan];
 %% True Positive & False Nega
 % -----------------
 TP  =[];                            % True  Positve
@@ -50,8 +50,7 @@ end
 
 TP = unique(TP);
 truePulse = unique(truePulse);
-TP = TP(~ismember(TP,Flags));
-truePulse = truePulse(~ismember(TP,Flags));
+RR = RR(ismember(TP,testPnt));
 p = corrcoef(TP,truePulse);
 p = p(1,2);
 [fitresult, gof] = createFit(TP, truePulse);
@@ -69,6 +68,6 @@ FP=unique(FP);
 %% Sensitivity and FDR
 Sensitivity = (length(TP)/(length(TP)+length(FN)))*100;
 FDR         = (length(FP)/(length(FP)+length(TP)))*100;
-TP = 60000./diff(TP);
-truePulse = 60000./diff(truePulse);
-avgDist = mean(abs((TP - truePulse)));
+HR = 60000./RR;
+trueHR = 60000./refRR(ismember(truePulse,Positive));
+avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan');

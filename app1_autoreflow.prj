@@ -88,6 +88,7 @@
     <fileset.depfun>
       <file>${PROJECT_ROOT}\createFit.m</file>
       <file>${PROJECT_ROOT}\edfread.m</file>
+      <file>${PROJECT_ROOT}\FlagBlockSpare.m</file>
       <file>${PROJECT_ROOT}\parseData.m</file>
       <file>${PROJECT_ROOT}\peaksBasedPerformanceAnalysis.m</file>
       <file>${PROJECT_ROOT}\tagTime.m</file>

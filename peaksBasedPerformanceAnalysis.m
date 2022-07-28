@@ -1,4 +1,4 @@
-function [avgDist,Sensitivity,FDR,p,slope,r2] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags)
+function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
 % testPnt   - Output of algorithm.
@@ -19,7 +19,7 @@ function [avgDist,Sensitivity,FDR,p,slope,r2] = peaksBasedPerformanceAnalysis (P
 % Take off any duplicate values.
 Positive = unique (Positive);
 testPnt = unique (testPnt);
-refRR = [diff(Positive) nan];
+refRR = [diff(Positive) -1];
 %% True Positive & False Nega
 % -----------------
 TP  =[];                            % True  Positve
@@ -65,8 +65,9 @@ FP=unique(FP);
 %%
 %gen table
 Time = sort([Positive,FP]);
-testTime = Time;
+testTime = Time; 
 testTime(ismember(Time,truePulse)) = TP;
+testTimeOrig = testTime - lag;
 testFlag = -1*ones(size(Time));
 testFlag(ismember(testTime,TP)) = 1;
 testFlag(ismember(testTime,FP)) = 1;
@@ -79,6 +80,9 @@ testRR = -1*ones(size(Time));
 testRR(ismember(testTime,sort([TP FP]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
+refNoise = -1*ones(size(Time));
+pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
+                refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));
 %true noise????
 
 %% Sensitivity and FDR

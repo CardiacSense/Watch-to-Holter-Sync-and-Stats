@@ -53,9 +53,11 @@ truePulse = unique(truePulse);
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
-[fitresult, gof] = createFit(TP, truePulse);
-slope = fitresult.p1;
-r2 = gof.rsquare;
+% [fitresult, gof] = createFit(TP, truePulse);
+% slope = fitresult.p1;
+% r2 = gof.rsquare;
+slope = nan;
+r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -64,7 +66,7 @@ FP=  setdiff(testPnt,TP);
 FP=unique(FP);
 %%
 %gen table
-Time = sort([Positive,FP]);
+Time = sort([Positive(:);FP(:)]);
 testTime = Time; 
 testTime(ismember(Time,truePulse)) = TP;
 testTimeOrig = testTime - lag;

@@ -56,8 +56,8 @@ p = p(1,2);
 [fitresult, gof] = createFit(TP, truePulse);
 slope = fitresult.p1;
 r2 = gof.rsquare;
-slope = nan;
-r2 = nan;
+% slope = nan;
+% r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -77,9 +77,9 @@ trueFlag = -1*ones(size(Time));
 trueFlag(ismember(Time,truePulse)) = 1;
 trueFlag(ismember(Time,FN)) = 1;
 trueRR = -1*ones(size(Time));
-trueRR(ismember(Time,sort([truePulse FN]))) = refRR;
+trueRR(ismember(Time,sort([truePulse(:); FN(:)]))) = refRR;
 testRR = -1*ones(size(Time));
-testRR(ismember(testTime,sort([TP FP]))) = RR;
+testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));

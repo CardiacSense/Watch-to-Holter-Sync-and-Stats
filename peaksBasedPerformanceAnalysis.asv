@@ -1,4 +1,4 @@
-function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag)
+function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag,Title)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
 % testPnt   - Output of algorithm.
@@ -15,6 +15,11 @@ function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnal
 % (2)   This version is immune to doubled value like [3,3,3, 11,...]. It
 %       treats it as one.
 % (3)
+%% snap to data
+lagFix = snap2data(Positive,testPnt);
+x1 = lagFix.Coefficients.Estimate('x1');
+testPnt = testPnt + lagFix;
+Flags = Flags + lagFix;
 %% Unique Tests
 % Take off any duplicate values.
 Positive = unique (Positive);
@@ -69,7 +74,7 @@ FP=unique(FP);
 Time = sort([Positive(:);FP(:)]);
 testTime = Time; 
 testTime(ismember(Time,truePulse)) = TP;
-testTimeOrig = testTime - lag;
+testTimeOrig = testTime - (lag + lagFix);
 testFlag = -1*ones(size(Time));
 testFlag(ismember(testTime,TP)) = 1;
 testFlag(ismember(testTime,FP)) = 1;
@@ -77,9 +82,9 @@ trueFlag = -1*ones(size(Time));
 trueFlag(ismember(Time,truePulse)) = 1;
 trueFlag(ismember(Time,FN)) = 1;
 trueRR = -1*ones(size(Time));
-trueRR(ismember(Time,sort([truePulse FN]))) = refRR;
+trueRR(ismember(Time,sort([truePulse(:); FN(:)]))) = refRR;
 testRR = -1*ones(size(Time));
-testRR(ismember(testTime,sort([TP FP]))) = RR;
+testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));
@@ -90,6 +95,7 @@ pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
 %% Sensitivity and FDR
 RR = RR(ismember(TP,testPnt));
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
+noisePnts = FN(refFlagPnts);
 FN=FN(~refFlagPnts);
 FP = FP(~ismember(FP,Flags));
 Sensitivity = (length(TP)/(length(TP)+length(FN)))*100;
@@ -99,8 +105,11 @@ HR = 60000./RR;
 trueHR = 60000./refRR(ismember(truePulse,Positive));
 avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan');
 %% Gen new figure 
-figure(); 
-plot(TP,ones(size(TP)),'xr','DisplayName','True Positive');
-plot(FN,ones(size(FN)),'sk','DisplayName','False Neg');
-plot(FP,ones(size(FP)),'og','DisplayName','False Positive');
-plot
+figure(); hold on;
+plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);
+plot(TP,ones(size(TP)),'xr','DisplayName','True Positive','MarkerSize', 15,'LineWidth',1);
+plot(FN,ones(size(FN)),'sk','DisplayName','False Neg','MarkerSize',15,'LineWidth',1);
+plot(FP,ones(size(FP)),'og','DisplayName','False Positive','MarkerSize',15,'LineWidth',1);
+plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
+legend show;
+title(Title)

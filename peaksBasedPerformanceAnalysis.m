@@ -15,10 +15,6 @@ function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnal
 % (2)   This version is immune to doubled value like [3,3,3, 11,...]. It
 %       treats it as one.
 % (3)
-%% snap to data
-lagFix = snap2data(Positive,testPnt);
-testPnt = testPnt + lagFix;
-Flags = Flags + lagFix;
 %% Unique Tests
 % Take off any duplicate values.
 Positive = unique (Positive);
@@ -57,11 +53,11 @@ truePulse = unique(truePulse);
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
-% [fitresult, gof] = createFit(TP, truePulse);
-% slope = fitresult.p1;
-% r2 = gof.rsquare;
-slope = nan;
-r2 = nan;
+[fitresult, gof] = createFit(TP, truePulse);
+slope = fitresult.p1;
+r2 = gof.rsquare;
+% slope = nan;
+% r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -73,7 +69,7 @@ FP=unique(FP);
 Time = sort([Positive(:);FP(:)]);
 testTime = Time; 
 testTime(ismember(Time,truePulse)) = TP;
-testTimeOrig = testTime - (lag + lagFix);
+testTimeOrig = testTime - (lag);
 testFlag = -1*ones(size(Time));
 testFlag(ismember(testTime,TP)) = 1;
 testFlag(ismember(testTime,FP)) = 1;

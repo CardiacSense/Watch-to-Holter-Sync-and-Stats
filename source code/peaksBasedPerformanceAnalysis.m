@@ -101,7 +101,8 @@ FDR         = (length(FP)/(length(FP)+length(TP)))*100;
 ppv       = (length(TP)/(length(FP)+length(TP)))*100;
 HR = 60000./RR;
 trueHR = 60000./refRR(ismember(truePulse,Positive));
-avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan');
+% avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan'); % MAE
+avgDist = rms(HR(:) - trueHR(:)); % RMS
 %% Gen new figure 
 figure(); hold on;
 plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);

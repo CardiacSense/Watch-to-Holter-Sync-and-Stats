@@ -19,6 +19,7 @@ function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnal
 % Take off any duplicate values.
 Positive = unique (Positive);
 testPnt = unique (testPnt);
+refRR = [diff(Positive) -1];
 %% True Positive & False Nega
 % -----------------
 TP  =[];                            % True  Positve
@@ -48,7 +49,10 @@ for k=1:length(Positive)
 end
 
 [TP, IA] = unique(TP);
-truePulse = truePulse(IA)';
+%keep unique TPs and assign others as FN...
+FN = sort([FN, setdiff(truePulse,truePulse(IA))]);
+truePulse = truePulse(IA);
+
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
@@ -97,7 +101,8 @@ FDR         = (length(FP)/(length(FP)+length(TP)))*100;
 ppv       = (length(TP)/(length(FP)+length(TP)))*100;
 HR = 60000./RR;
 trueHR = 60000./refRR(ismember(truePulse,Positive));
-avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan');
+% avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan'); % MAE
+avgDist = sqrt(mean((HR(:) - trueHR(:)).^2)); % RMS
 %% Gen new figure 
 figure(); hold on;
 plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);

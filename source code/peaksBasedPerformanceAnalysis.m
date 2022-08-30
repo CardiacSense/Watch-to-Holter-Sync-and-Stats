@@ -56,11 +56,11 @@ truePulse = truePulse(IA);
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
-% [fitresult, gof] = createFit(TP, truePulse);
-% slope = fitresult.p1;
-% r2 = gof.rsquare;
-slope = nan;
-r2 = nan;
+[fitresult, gof] = createFit(TP, truePulse);
+slope = fitresult.p1;
+r2 = gof.rsquare;
+% slope = nan;
+% r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -98,11 +98,12 @@ FN=FN(~refFlagPnts);
 FP = FP(~ismember(FP,Flags));
 Sensitivity = (length(TP)/(length(TP)+length(FN)))*100;
 FDR         = (length(FP)/(length(FP)+length(TP)))*100;
-ppv       = (length(TP)/(length(FP)+length(TP)))*100;
+ppv         = (length(TP)/(length(FP)+length(TP)))*100;
 HR = 60000./RR;
 trueHR = 60000./refRR(ismember(truePulse,Positive));
+trueHR(trueHR<0) = nan;
 % avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan'); % MAE
-avgDist = sqrt(mean((HR(:) - trueHR(:)).^2)); % RMS
+avgDist = sqrt((sum((HR(:) - trueHR(:)).^2,'omitnan'))/length(HR)); % RMS
 %% Gen new figure 
 figure(); hold on;
 plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);

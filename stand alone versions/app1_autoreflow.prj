@@ -8,7 +8,7 @@
       <file>${PROJECT_ROOT}\app1_autoreflow_resources\icon_24.png</file>
       <file>${PROJECT_ROOT}\app1_autoreflow_resources\icon_16.png</file>
     </param.icons>
-    <param.version>1.0.9</param.version>
+    <param.version>1.0.10</param.version>
     <param.authnamewatermark />
     <param.email />
     <param.company />

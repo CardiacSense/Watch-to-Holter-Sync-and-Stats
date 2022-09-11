@@ -59,8 +59,8 @@ p = p(1,2);
 [fitresult, gof] = createFit(TP, truePulse);
 slope = fitresult.p1;
 r2 = gof.rsquare;
-slope = nan;
-r2 = nan;
+% slope = nan;
+% r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -100,14 +100,15 @@ Sensitivity = (length(TP)/(length(TP)+length(FN)))*100;
 FDR         = (length(FP)/(length(FP)+length(TP)))*100;
 ppv         = (length(TP)/(length(FP)+length(TP)))*100;
 HR = 60000./RR;
-trueHR = 60000./refRR(ismember(truePulse,Positive));
+trueHR = 60000./refRR(ismember(Positive,truePulse));
+trueHR(trueHR<0) = nan;
 % avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan'); % MAE
-avgDist = sqrt((sum((HR(:) - trueHR(:)).^2))/length(HR)); % RMS
+avgDist = sqrt((sum((HR(:) - trueHR(:)).^2,'omitnan'))/length(HR)); % RMS
 %% Gen new figure 
 figure(); hold on;
 plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);
-plot(TP,ones(size(TP)),'xr','DisplayName','True Positive','MarkerSize', 15,'LineWidth',1);
-plot(FN,ones(size(FN)),'sk','DisplayName','False Neg','MarkerSize',15,'LineWidth',1);
+plot(TP,ones(size(TP)),'xr','DisplayName',['True Positive ',num2str(TP)],'MarkerSize', 15,'LineWidth',1);
+plot(FN,ones(size(FN)),'sk','DisplayName',['False Neg', num2str(FN)],'MarkerSize',15,'LineWidth',1);
 plot(FP,ones(size(FP)),'og','DisplayName','False Positive','MarkerSize',15,'LineWidth',1);
 plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
 legend show;

@@ -107,9 +107,9 @@ avgDist = sqrt((sum((HR(:) - trueHR(:)).^2,'omitnan'))/length(HR)); % RMS
 %% Gen new figure 
 figure(); hold on;
 plot(Positive,ones(size(Positive)),'Color','m','Marker','hexagram','DisplayName','Holter Peaks','MarkerSize',12,'LineStyle','none','LineWidth',1);
-plot(TP,ones(size(TP)),'xr','DisplayName','True Positive','MarkerSize', 15,'LineWidth',1);
-plot(FN,ones(size(FN)),'sk','DisplayName','False Neg','MarkerSize',15,'LineWidth',1);
-plot(FP,ones(size(FP)),'og','DisplayName','False Positive','MarkerSize',15,'LineWidth',1);
+plot(TP,ones(size(TP)),'xr','DisplayName',['True Positive ',num2str(numel(TP))],'MarkerSize', 15,'LineWidth',1);
+plot(FN,ones(size(FN)),'sk','DisplayName',['False Neg ', num2str(numel(FN))],'MarkerSize',15,'LineWidth',1);
+plot(FP,ones(size(FP)),'og','DisplayName',['False Positive ', num2str(numel(FP))],'MarkerSize',15,'LineWidth',1);
 plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
 legend show;
 title(Title)

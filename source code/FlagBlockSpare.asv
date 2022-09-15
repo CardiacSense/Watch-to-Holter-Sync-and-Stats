@@ -1,10 +1,10 @@
 function [Flag_spare]=FlagBlockSpare(Flag,SpareSize)
 % FlagBlockSpare - inserting spare to flags. 
-% - Add 'SpareSize' samples to start&end of 'Flag'
+% - Add to every start and end 
 
 Flag_spare = Flag;
 for k=2:length(Flag)-1
-    if(Flag(k)&& ~Flag(k-1)) % Flag start
+    if(Flag(k)&& ~Flag(k-1))
         if(SpareSize>k)
             Flag_spare(1:k-1)=1;
         else 
@@ -12,7 +12,7 @@ for k=2:length(Flag)-1
         end
     end
     
-    if(~Flag(k)&& Flag(k-1)) % Flag end
+    if(~Flag(k)&& Flag(k-1))    
         if((k+SpareSize-1)>length(Flag))
             Flag_spare(k:end)=1;
         else

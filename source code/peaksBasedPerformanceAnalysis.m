@@ -58,12 +58,13 @@ FN = sort([FN, setdiff(truePulse,truePulse(IA))]);
 truePulse = truePulse(IA);
 trueRR_ref_inx = trueRR_ref_inx(IA);
 
-% p = corrcoef(TP,truePulse);
-% p = p(1,2);
-% [fitresult, gof] = createFit(TP, truePulse);
-% slope = fitresult.p1;
-% r2 = gof.rsquare;
-p=[];slope=[];r2=[];
+p = corrcoef(TP,truePulse);
+p = p(1,2);
+[fitresult, gof] = createFit(TP, truePulse);
+slope = fitresult.p1;
+r2 = gof.rsquare;
+%p=[];slope=[];r2=[];
+
 % slope = nan;
 % r2 = nan;
 %% False Positive:
@@ -73,10 +74,7 @@ p=[];slope=[];r2=[];
 [FP,FP_inx] =  setdiff(testPnt,TP);
 FP = unique(FP);
 falseRR_FP=FP_inx+1;
- 
-% find(TP>FP,1,'first')
-% falseRRinx_FP=sort([FP_inx,FP_inx+1]);
-% falseRRinx_FP(falseRRinx_FP>length(testPnt))=[];
+
 %%
 %gen table
 Time = sort([Positive(:);FP(:)]);

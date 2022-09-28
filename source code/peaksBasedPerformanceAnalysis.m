@@ -17,14 +17,16 @@ function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnal
 % (3)
 %% Unique Tests
 % Take off any duplicate values.
-Positive = unique (Positive);
-testPnt = unique (testPnt);
+Positive = unique(Positive);
+testPnt = unique(testPnt);
 refRR = [diff(Positive) -1];
 %% True Positive & False Nega
 % -----------------
 TP  =[];                            % True  Positve
 FN  =[];                            % False Negative
 truePulse = [];
+falseRR_FN=[];
+trueRR_ref_inx=[];
 for k=1:length(Positive)
     %% Positive range:
     TPbound = [Positive(k)-margin,Positive(k)+margin];
@@ -43,8 +45,10 @@ for k=1:length(Positive)
     if(Pair)
         TP= [TP Pair];              % True Positive
         truePulse = [truePulse Positive(k)];
+        trueRR_ref_inx=[trueRR_ref_inx,k];                           % Reference index for TP
     else
         FN = [FN  Positive(k)];     % False Negative
+        falseRR_FN=[falseRR_FN find(testPnt>Positive(k),1,'first')]; % First peak after FN - false RR
     end
 end
 
@@ -52,21 +56,27 @@ end
 %keep unique TPs and assign others as FN...
 FN = sort([FN, setdiff(truePulse,truePulse(IA))]);
 truePulse = truePulse(IA);
+trueRR_ref_inx = trueRR_ref_inx(IA);
 
-
-p = corrcoef(TP,truePulse);
-p = p(1,2);
-[fitresult, gof] = createFit(TP, truePulse);
-slope = fitresult.p1;
-r2 = gof.rsquare;
+% p = corrcoef(TP,truePulse);
+% p = p(1,2);
+% [fitresult, gof] = createFit(TP, truePulse);
+% slope = fitresult.p1;
+% r2 = gof.rsquare;
+p=[];slope=[];r2=[];
 % slope = nan;
 % r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
 % Positive.
-FP =  setdiff(testPnt,TP);
+[FP,FP_inx] =  setdiff(testPnt,TP);
 FP = unique(FP);
+falseRR_FP=FP_inx+1;
+ 
+% find(TP>FP,1,'first')
+% falseRRinx_FP=sort([FP_inx,FP_inx+1]);
+% falseRRinx_FP(falseRRinx_FP>length(testPnt))=[];
 %%
 %gen table
 Time = sort([Positive(:);FP(:)]);
@@ -91,7 +101,14 @@ pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
 %true noise????
 
 %% Sensitivity and FDR
-RR = RR(ismember(TP,testPnt));
+TrueRRinx=find(ismember(testPnt,TP));      % True RR (relate to TP)
+TrueRRinx=setdiff(TrueRRinx,falseRR_FP);   % remove false RR's relate to FP
+TrueRRinx=setdiff(TrueRRinx,falseRR_FN);   % remove false RR's relate to FN
+RR = RR(TrueRRinx);
+
+trueRR_ref_inx(falseRR_FP)=[];   % remove false RR's relate to FP
+trueRR_ref_inx(falseRR_FN)=[];   % remove false RR's relate to FN
+
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);
 FN=FN(~refFlagPnts);
@@ -100,7 +117,7 @@ Sensitivity = (length(TP)/(length(TP)+length(FN)))*100;
 FDR         = (length(FP)/(length(FP)+length(TP)))*100;
 ppv         = (length(TP)/(length(FP)+length(TP)))*100;
 HR = 60000./RR;
-trueHR = 60000./refRR(ismember(Positive,truePulse));
+trueHR = 60000./refRR(trueRR_ref_inx);
 trueHR(trueHR<0) = nan;
 % avgDist = mean(abs((HR(:) - trueHR(:))),'omitnan'); % MAE
 avgDist = sqrt((sum((HR(:) - trueHR(:)).^2,'omitnan'))/length(HR)); % RMS
@@ -113,3 +130,16 @@ plot(FP,ones(size(FP)),'og','DisplayName',['False Positive ', num2str(numel(FP))
 plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
 legend show;
 title(Title)
+
+
+%%
+%{
+figure; plot(Positive,refRR,'*-','DisplayName','ref'); hold on; 
+plot(testPnt,RR,'*-','DisplayName','CS'); 
+plot(TP,RR((ismember(testPnt,TP))),'og','DisplayName','TP');
+plot(FN,refRR((ismember(Positive,FN))),'om','DisplayName','FN');
+plot(FP,RR((ismember(testPnt,FP))),'oy','DisplayName','FP');
+WW=setdiff(1:length(RR),TrueRRinx);
+plot(testPnt(WW),RR(WW),'sk','DisplayName','false RR');
+legend show
+%}

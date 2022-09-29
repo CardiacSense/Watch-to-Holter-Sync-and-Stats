@@ -102,10 +102,10 @@ pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
 TrueRRinx=find(ismember(testPnt,TP));      % True RR (relate to TP)
 TrueRRinx=setdiff(TrueRRinx,falseRR_FP);   % remove false RR's relate to FP
 TrueRRinx=setdiff(TrueRRinx,falseRR_FN);   % remove false RR's relate to FN
-RR = RR(TrueRRinx);
+RR = RR(TrueRRinx);                        % Valid RR
 
-trueRR_ref_inx(falseRR_FP)=[];   % remove false RR's relate to FP
-trueRR_ref_inx(falseRR_FN)=[];   % remove false RR's relate to FN
+trueRR_ref_inx(falseRR_FP)=[];             % remove false RR's relate to FP
+trueRR_ref_inx(falseRR_FN)=[];             % remove false RR's relate to FN
 
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);

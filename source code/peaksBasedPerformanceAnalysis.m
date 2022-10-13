@@ -1,4 +1,4 @@
-function [avgDist,Sensitivity,FDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag,Title)
+function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag,Title)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
 % testPnt   - Output of algorithm.
@@ -27,6 +27,7 @@ FN  =[];                            % False Negative
 truePulse = [];
 falseRR_FN=[];
 trueRR_ref_inx=[];
+
 for k=1:length(Positive)
     %% Positive range:
     TPbound = [Positive(k)-margin,Positive(k)+margin];
@@ -46,6 +47,7 @@ for k=1:length(Positive)
         TP= [TP Pair];              % True Positive
         truePulse = [truePulse Positive(k)];
         trueRR_ref_inx=[trueRR_ref_inx,k];                           % Reference index for TP
+
     else
         FN = [FN  Positive(k)];     % False Negative
         falseRR_FN=[falseRR_FN find(testPnt>Positive(k),1,'first')]; % First peak after FN - false RR
@@ -97,7 +99,27 @@ refNoise = -1*ones(size(Time));
 pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));
 %true noise????
-
+%% RR TP/FP/FN
+rrTP = 0;
+rrFN = 0;
+rrFP = 0;
+for k = 2:length(testRR)
+    if trueFlag(k) && trueFlag(k-1)  && testFlag(k) && testFlag(k-1)
+        % RR within margin and peaks on both ends were correctly detected
+        rrTP = rrTP + 1;
+    elseif trueFlag(k) && trueFlag(k-1) && (~testFlag(k) || ~testFlag(k-1))
+        % peaks on both ends for holter but not on both ends for watch ->
+        % FN
+        rrFN = rrFN + 1;
+    else
+        %either RR not within margin or peaks detected on watch but not
+        %holter (either end)
+        rrFP = rrFP + 1;
+    end
+end
+rrSensitivity = rrTP/(rrTP+rrFN)*100;
+rrFDR         = rrFP/(rrFP+rrTP)*100;
+rrppv         = rrTP/(rrFP+rrTP)*100;
 %% Sensitivity and FDR
 TrueRRinx=find(ismember(testPnt,TP));      % True RR (relate to TP)
 TrueRRinx=setdiff(TrueRRinx,falseRR_FP);   % remove false RR's relate to FP

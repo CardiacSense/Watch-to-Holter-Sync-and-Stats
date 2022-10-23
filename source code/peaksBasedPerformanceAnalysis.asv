@@ -98,11 +98,11 @@ rrFN = 0;
 rrFP = 0;
 trueRR_inx=[]; 
 for k = 2:length(testRR)
-    if trueFlag(k)==1 && trueFlag(k-1)==1  && testFlag(k)==1 && testFlag(k-1)==1
+    if trueFlag(k)==1 && trueFlag(k-1)==1  && testFlag(k) && testFlag(k-1)
         % RR within margin and peaks on both ends were correctly detected
         rrTP = rrTP + 1;
         trueRR_inx=[trueRR_inx k];
-    elseif trueFlag(k)==1 && trueFlag(k-1)==1 && (~(testFlag(k)==1) || ~(testFlag(k-1)==1))
+    elseif trueFlag(k) && trueFlag(k-1) && (~testFlag(k) || ~testFlag(k-1))
         % peaks on both ends for holter but not on both ends for watch ->
         % FN
         rrFN = rrFN + 1;

@@ -43,7 +43,6 @@ for k=1:length(Positive)
     if(Pair)
         TP= [TP Pair];              % True Positive
         truePulse = [truePulse Positive(k)];
-
     else
         FN = [FN  Positive(k)];     % False Negative
     end

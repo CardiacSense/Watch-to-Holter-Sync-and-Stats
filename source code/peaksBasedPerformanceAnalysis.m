@@ -58,7 +58,7 @@ p = p(1,2);
 [fitresult, gof] = createFit(TP, truePulse);
 slope = fitresult.p1;
 r2 = gof.rsquare;
-%p=[];slope=[];r2=[];
+% p=[];slope=[];r2=[];
 
 % slope = nan;
 % r2 = nan;
@@ -100,12 +100,12 @@ for k = 2:length(testRR)
         % RR within margin and peaks on both ends were correctly detected
         rrTP = rrTP + 1;
         trueRR_inx=[trueRR_inx k];
-    elseif trueFlag(k)==1 && trueFlag(k-1)==1 && (~(testFlag(k)==1) || ~(testFlag(k-1)==1))
+    elseif trueFlag(k)==1 && trueFlag(k-1)==1 && (~(testFlag(k)==1) || ~(testFlag(k-1)==1)) && ~testNoise(k)
         % peaks on both ends for holter but not on both ends for watch ->
         % FN
         rrFN = rrFN + 1;
         testRR(k)=-1; % remove wrong RR
-    else
+    elseif ~testNoise(k)
         %either RR not within margin or peaks detected on watch but not
         %holter (either end)
         rrFP = rrFP + 1;

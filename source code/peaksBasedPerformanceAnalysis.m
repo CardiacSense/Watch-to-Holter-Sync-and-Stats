@@ -53,12 +53,12 @@ end
 FN = sort([FN, setdiff(truePulse,truePulse(IA))]);
 truePulse = truePulse(IA);
 
-% p = corrcoef(TP,truePulse);
-% p = p(1,2);
-% [fitresult, gof] = createFit(TP, truePulse);
-% slope = fitresult.p1;
-% r2 = gof.rsquare;
-p=[];slope=[];r2=[];
+p = corrcoef(TP,truePulse);
+p = p(1,2);
+[fitresult, gof] = createFit(TP, truePulse);
+slope = fitresult.p1;
+r2 = gof.rsquare;
+% p=[];slope=[];r2=[];
 
 % slope = nan;
 % r2 = nan;

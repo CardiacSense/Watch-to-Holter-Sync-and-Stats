@@ -1,10 +1,16 @@
-function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag,Title)
+function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,RRflag,margin,Flags,lag,Title)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
-% testPnt   - Output of algorithm.
+% 
 
 % Positive  - Benchmark peaks are regerded as positives.
-% Negative  -
+% testPnt   - Output of algorithm (watch)
+% RR        - RR output from the watch
+% RRflag    - RR flag- 1 for valid RR and 0 otherwise
+% margin    - margin for peaks match
+% Flags     - noise flag - watch output
+% lag       - Lag between watch & ref
+% Title     - Title for plots
 
 % Disclaimers:
 % ----------------
@@ -88,17 +94,18 @@ testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));
-pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
-                refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));
+RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid
+RRnoise(ismember(testRR,RR(find(~RRflag))))=0;
+
 %true noise????
-%% RR TP/FP/FN
+%% RR stats TP/FP/FN
 % visual explanation in pptx in folder
 rrTP = 0;
 rrFN = 0;
 rrFP = 0;
 trueRR_inx=[]; 
 for k = 2:length(testRR)
-    if ~testNoise(k) % valid watch
+    if ~testNoise(k) &&  ~RRnoise(k) % valid RR
         if  trueFlag(k)==1 && trueFlag(k-1)==1  && testFlag(k)==1 && testFlag(k-1)==1
             % TP
             % RR within margin and peaks on both ends were correctly detected
@@ -112,7 +119,7 @@ for k = 2:length(testRR)
             %             OR
             %             both end for watch but not for holter
             rrFN = rrFN + 1;
-            testRR(k)=-1; % remove wrong RR
+            RRnoise(k)=1; % remove wrong RR
         elseif ( (trueFlag(k)==-1 || trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1)) ...
                 || ...
                 ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==1 && testFlag(k-1)==-1) )
@@ -121,7 +128,7 @@ for k = 2:length(testRR)
             %            OR 
             %            both end for hlter but left end for watch
             rrFP = rrFP + 1;
-            testRR(k)=-1; % remove wrong RR
+            RRnoise(k)=1; % remove wrong RR
         end
     end
 end
@@ -131,6 +138,10 @@ rrppv         = rrTP/(rrFP+rrTP)*100;
 
 trueRR4calc_ref=trueRR(trueRR_inx);
 trueRR4calc_test=testRR(trueRR_inx);
+
+% 
+pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
+                refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:),RRnoise(:));
 %% Sensitivity and FDR
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);

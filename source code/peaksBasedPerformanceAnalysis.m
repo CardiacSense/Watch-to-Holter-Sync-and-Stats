@@ -95,7 +95,7 @@ testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));
 RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid
-RRnoise(ismember(testRR,RR(find(~RRflag))))=0;
+RRnoise(ismember(testRR,RR(find(~RRflag))))=-1;
 
 %true noise????
 %% RR stats TP/FP/FN

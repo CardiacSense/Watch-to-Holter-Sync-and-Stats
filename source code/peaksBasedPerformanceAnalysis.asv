@@ -1,10 +1,16 @@
-function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,margin,Flags,lag,Title)
+function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = peaksBasedPerformanceAnalysis (Positive,testPnt,RR,RRflag,margin,Flags,lag,Title)
 %% Analysis of peaks.
 % Benchmark - True Peaks.
-% testPnt   - Output of algorithm.
+% 
 
 % Positive  - Benchmark peaks are regerded as positives.
-% Negative  -
+% testPnt   - Output of algorithm (watch)
+% RR        - RR output from the watch
+% RRflag    - RR flag- 1 for valid RR and 0 otherwise
+% margin    - margin for peaks match
+% Flags     - noise flag - watch output
+% lag       - Lag between watch & ref
+% Title     - Title for plots
 
 % Disclaimers:
 % ----------------
@@ -56,10 +62,13 @@ truePulse = truePulse(IA);
 p = corrcoef(TP,truePulse);
 p = p(1,2);
 try
-[fitresult, gof] = createFit(TP, truePulse);
-slope = fitresult.p1;
-r2 = gof.rsquare;
-% slope = nan; r2 = nan;
+    [fitresult, gof] = createFit(TP, truePulse);
+    slope = fitresult.p1;
+    r2 = gof.rsquare;
+catch
+    slope = nan; r2 = nan;
+    warning('Unsuccessful fitting');
+end
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -85,6 +94,8 @@ testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));
+RRnoise = -1*ones(size(Time));                                   % unvalid RR flag (watch)
+RRnoise(ismember(testRR,RR(~RRflag)))=1;
 pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));
 %true noise????
@@ -95,7 +106,7 @@ rrFN = 0;
 rrFP = 0;
 trueRR_inx=[]; 
 for k = 2:length(testRR)
-    if ~testNoise(k) % valid watch
+    if ~testNoise(k) % valid RR
         if  trueFlag(k)==1 && trueFlag(k-1)==1  && testFlag(k)==1 && testFlag(k-1)==1
             % TP
             % RR within margin and peaks on both ends were correctly detected

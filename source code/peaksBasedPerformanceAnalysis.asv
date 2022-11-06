@@ -55,13 +55,11 @@ truePulse = truePulse(IA);
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
+try
 [fitresult, gof] = createFit(TP, truePulse);
 slope = fitresult.p1;
 r2 = gof.rsquare;
-% p=[];slope=[];r2=[];
-
-% slope = nan;
-% r2 = nan;
+% slope = nan; r2 = nan;
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False
@@ -91,6 +89,7 @@ pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));
 %true noise????
 %% RR TP/FP/FN
+% visual explanation in pptx in folder
 rrTP = 0;
 rrFN = 0;
 rrFP = 0;
@@ -104,18 +103,22 @@ for k = 2:length(testRR)
             trueRR_inx=[trueRR_inx k];
         elseif ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==-1 || testFlag(k-1)==-1)) ...
                 || ...
-                ( (trueFlag(k)==1 && trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1))
+               ( (trueFlag(k)==1 && trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1))
             % FN
-            % peaks on both ends for holter but not on both ends for watch ->
+            % missing RR- peaks on both ends for holter but not on both ends for watch 
+            %             OR
+            %             both end for watch but not for holter
             rrFN = rrFN + 1;
             testRR(k)=-1; % remove wrong RR
         elseif ( (trueFlag(k)==-1 || trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1)) ...
                 || ...
-                ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==-1 && testFlag(k-1)==1) )
+                ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==1 && testFlag(k-1)==-1) )
             % FP
             % wrong RR - both end for watch but not on holter 
+            %            OR 
+            %            both end for hlter but left end for watch
             rrFP = rrFP + 1;
-            testRR(k)=-1;  % remove wrong RR
+            testRR(k)=-1; % remove wrong RR
         end
     end
 end

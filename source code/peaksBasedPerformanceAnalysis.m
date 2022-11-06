@@ -55,13 +55,14 @@ truePulse = truePulse(IA);
 
 p = corrcoef(TP,truePulse);
 p = p(1,2);
-[fitresult, gof] = createFit(TP, truePulse);
-slope = fitresult.p1;
-r2 = gof.rsquare;
-% p=[];slope=[];r2=[];
-
-% slope = nan;
-% r2 = nan;
+try
+    [fitresult, gof] = createFit(TP, truePulse);
+    slope = fitresult.p1;
+    r2 = gof.rsquare;
+catch
+    slope = nan; r2 = nan;
+    warning('Unsuccessful fitting');
+end
 %% False Positive:
 % ------------------
 % All of the test points which are not paired to a Positive - are False

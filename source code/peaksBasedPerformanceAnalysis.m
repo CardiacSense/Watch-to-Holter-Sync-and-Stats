@@ -94,8 +94,8 @@ testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
 refNoise = -1*ones(size(Time));
-RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid
-RRnoise(ismember(testRR,RR(find(~RRflag))))=-1;
+RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid, -1 - false, 0-valid
+RRnoise(ismember(testRR,RR(find(~RRflag))))=0;
 
 %true noise????
 %% RR stats TP/FP/FN
@@ -119,7 +119,7 @@ for k = 2:length(testRR)
             %             OR
             %             both end for watch but not for holter
             rrFN = rrFN + 1;
-            RRnoise(k)=1; % remove wrong RR
+            RRnoise(k)=-1; % remove wrong RR
         elseif ( (trueFlag(k)==-1 || trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1)) ...
                 || ...
                 ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==1 && testFlag(k-1)==-1) )
@@ -128,7 +128,7 @@ for k = 2:length(testRR)
             %            OR 
             %            both end for hlter but left end for watch
             rrFP = rrFP + 1;
-            RRnoise(k)=1; % remove wrong RR
+            RRnoise(k)=-1; % remove wrong RR
         end
     end
 end

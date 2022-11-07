@@ -25,7 +25,7 @@ function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = pea
 % Take off any duplicate values.
 Positive = unique(Positive);
 testPnt = unique(testPnt);
-refRR = [diff(Positive) -1];
+refRR = [-1 diff(Positive)];
 %% True Positive & False Nega
 % -----------------
 TP  =[];                            % True  Positve
@@ -96,6 +96,7 @@ testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol s
 refNoise = -1*ones(size(Time));
 RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid, -1 - false, 0-valid
 RRnoise(ismember(testRR,RR(find(~RRflag))))=0;
+RRnoise(ismember(testTime,FN(:)))=0;
 
 %true noise????
 %% RR stats TP/FP/FN
@@ -105,30 +106,33 @@ rrFN = 0;
 rrFP = 0;
 trueRR_inx=[]; 
 for k = 2:length(testRR)
-    if ~testNoise(k) &&  ~RRnoise(k) % valid RR
+    if ~testNoise(k) &&  RRnoise(k)~=1 % valid RR
         if  trueFlag(k)==1 && trueFlag(k-1)==1  && testFlag(k)==1 && testFlag(k-1)==1
             % TP
             % RR within margin and peaks on both ends were correctly detected
             rrTP = rrTP + 1;
             trueRR_inx=[trueRR_inx k];
-        elseif ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==-1 || testFlag(k-1)==-1)) ...
-                || ...
-               ( (trueFlag(k)==1 && trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1))
-            % FN
-            % missing RR- peaks on both ends for holter but not on both ends for watch 
-            %             OR
-            %             both end for watch but not for holter
-            rrFN = rrFN + 1;
-            RRnoise(k)=-1; % remove wrong RR
-        elseif ( (trueFlag(k)==-1 || trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1)) ...
-                || ...
-                ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==1 && testFlag(k-1)==-1) )
-            % FP
-            % wrong RR - both end for watch but not on holter 
-            %            OR 
-            %            both end for hlter but left end for watch
-            rrFP = rrFP + 1;
-            RRnoise(k)=-1; % remove wrong RR
+        else
+            if ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==-1 || testFlag(k-1)==-1) ) ...
+                    || ...
+                    ( (trueFlag(k)==1 && trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1))
+                % FN
+                % missing RR- peaks on both ends for holter but not on both ends for watch
+                %             OR
+                %             both end for watch but not for holter
+                rrFN = rrFN + 1;
+                RRnoise(k)=-1; % remove wrong RR
+            end
+            if ( (trueFlag(k)==-1 || trueFlag(k-1)==-1) && (testFlag(k)==1 && testFlag(k-1)==1)) ...
+                    || ...
+                    ( (trueFlag(k)==1 && trueFlag(k-1)==1) && (testFlag(k)==1 && testFlag(k-1)==-1) )
+                % FP
+                % wrong RR - both end for watch but not on holter
+                %            OR
+                %            both end for hlter but left end for watch
+                rrFP = rrFP + 1;
+                RRnoise(k)=-1; % remove wrong RR
+            end
         end
     end
 end
@@ -142,6 +146,7 @@ trueRR4calc_test=testRR(trueRR_inx);
 % 
 pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:),RRnoise(:));
+%pkData=renamevars(pkData,1:10,["testTime","testTimeOrig","testRR","testFlag","refNoise","Time","trueRR","trueFlag","testNoise","RRnoise"]);
 %% Sensitivity and FDR
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);

@@ -145,7 +145,7 @@ trueRR4calc_test=testRR(trueRR_inx);
 
 % 
 pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
-                refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:),RRnoise(:));
+                refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));%,RRnoise(:));
 %pkData=renamevars(pkData,1:10,["testTime","testTimeOrig","testRR","testFlag","refNoise","Time","trueRR","trueFlag","testNoise","RRnoise"]);
 %% Sensitivity and FDR
 refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);

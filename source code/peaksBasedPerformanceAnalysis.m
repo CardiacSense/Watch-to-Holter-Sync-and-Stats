@@ -25,6 +25,11 @@ function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = pea
 % Take off any duplicate values.
 Positive = unique(Positive);
 testPnt = unique(testPnt);
+noisePeak=testPnt(RR==(1000*1/128));
+testPnt(RR==(1000*1/128))=[];              % peaks for coupling
+RRflag(RR==(1000*1/128))=[];
+RR(RR==(1000*1/128))=[];
+
 refRR = [-1 diff(Positive)];
 %% True Positive & False Nega
 % -----------------
@@ -77,7 +82,9 @@ end
 FP = unique(FP);
 
 %% Gen table
-Time = sort([Positive(:);FP(:)]);
+whiteFN=FN(ismembertol(FN,noisePeak,margin,'DataScale',1));
+
+Time = unique(sort([Positive(:);FP(:)]));
 testTime = Time; 
 testTime(ismember(Time,truePulse)) = TP;
 testTimeOrig = testTime - (lag);
@@ -93,6 +100,7 @@ testRR = -1*ones(size(Time));                                    % watch RR
 testRR(ismember(testTime,sort([TP(:); FP(:)]))) = RR;
 testNoise = zeros(size(Time));
 testNoise(ismembertol(testTime,Flags,margin,'DataScale',1)) = 1; %how much tol should i use?
+testNoise(ismember(testTime,whiteFN)) = 1;                       % invalid peaks printed for debug use
 refNoise = -1*ones(size(Time));
 RRnoise = ones(size(Time));                                     % unvalid RR flag (watch), 1-unvalid, -1 - false, 0-valid
 RRnoise(ismember(testRR,RR(find(~RRflag))))=0;
@@ -148,7 +156,7 @@ pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));%,RRnoise(:));
 %pkData=renamevars(pkData,1:10,["testTime","testTimeOrig","testRR","testFlag","refNoise","Time","trueRR","trueFlag","testNoise","RRnoise"]);
 %% Sensitivity and FDR
-refFlagPnts = ismembertol(FN,Flags,margin,'DataScale',1);
+refFlagPnts = ismembertol(FN,[Flags(:);noisePeak(:)],margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);
 FN=FN(~refFlagPnts);
 FP = FP(~ismember(FP,Flags));
@@ -169,7 +177,6 @@ plot(FP,ones(size(FP)),'og','DisplayName',['False Positive ', num2str(numel(FP))
 plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
 legend show;
 title(Title)
-
 
 %%
 %{

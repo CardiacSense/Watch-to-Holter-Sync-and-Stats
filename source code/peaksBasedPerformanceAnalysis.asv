@@ -25,7 +25,6 @@ function [avgDist,Sensitivity, rrSensitivity,FDR, rrFDR,p,slope,r2,pkData] = pea
 % Take off any duplicate values.
 Positive = unique(Positive);
 testPnt = unique(testPnt);
-%origTestPnt=testPnt;            % all peaks including invalid from debug use
 noisePeak=testPnt(RR==(1000*1/128));
 testPnt(RR==(1000*1/128))=[];              % peaks for coupling
 RRflag(RR==(1000*1/128))=[];
@@ -81,7 +80,6 @@ end
 % Positive.
 [FP,FP_inx] =  setdiff(testPnt,TP);
 FP = unique(FP);
-
 
 %% Gen table
 whiteFN=FN(ismembertol(FN,noisePeak,margin,'DataScale',1));
@@ -156,7 +154,7 @@ trueRR4calc_test=testRR(trueRR_inx);
 % 
 pkData = table(testTime(:),testTimeOrig(:),testRR(:),testFlag(:),...
                 refNoise(:),Time(:),trueRR(:),trueFlag(:),testNoise(:));%,RRnoise(:));
-%pkData=renamevars(pkData,1:10,["testTime","testTimeOrig","testRR","testFlag","refNoise","Time","trueRR","trueFlag","testNoise","RRnoise"]);
+%pkData=renamevars(pkData,1:width(pkData),["testTime","testTimeOrig","testRR","testFlag","refNoise","Time","trueRR","trueFlag","testNoise"]);
 %% Sensitivity and FDR
 refFlagPnts = ismembertol(FN,[Flags(:);noisePeak(:)],margin,'DataScale',1);
 noisePnts = FN(refFlagPnts);
@@ -179,7 +177,6 @@ plot(FP,ones(size(FP)),'og','DisplayName',['False Positive ', num2str(numel(FP))
 plot(noisePnts,ones(size(noisePnts)),'b*','DisplayName','Noise Time','MarkerSize',15,'LineWidth',1);
 legend show;
 title(Title)
-
 
 %%
 %{

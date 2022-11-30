@@ -82,6 +82,7 @@ end
 %%
 TotalResults=table(Sensitivity,FDR,rrSensitivity,rrFDR,avgDist,'RowNames',{'PPG','ECG'});
 
+
 %% compare results file
 [resF,resP]=uigetfile([infoP '\*.csv'],'Choose results summary file');
 totResT=readtable([resP,resF]);
@@ -129,7 +130,11 @@ for iRec=recNo
     currDir=dir([recDir '\' num2str(iRec)]);
     currDir(~[currDir.isdir],:)=[];
 
-    currFilePath=[[recDir '\' num2str(iRec)] '\' currDir(end).name];
+    if iRec==5 
+        currFilePath=[[recDir '\' num2str(iRec)] '\' currDir(end-1).name];
+    else
+        currFilePath=[[recDir '\' num2str(iRec)] '\' currDir(end).name];
+    end
     currDirIn=dir(currFilePath);
 
     ppgName=currDirIn((cellfun(@length,cellfun(splitFppg,{currDirIn.name},'UniformOutput',false),'UniformOutput',true)==2)).name;
@@ -137,8 +142,8 @@ for iRec=recNo
     
     if first==1
         first=0;
-        currPPG_T=readtable(fullfile(currFilePath,ppgName),'ReadRowNames',true);
-        currECG_T=readtable(fullfile(currFilePath,ecgName),'ReadRowNames',true);
+        currPPG_T=readtable(fullfile(currFilePath,ppgName),'ReadRowNames',false);
+        currECG_T=readtable(fullfile(currFilePath,ecgName),'ReadRowNames',false);
 
         writetable(currPPG_T,[recDir '\AllRecReportPPG.csv'],'WriteRowNames',true);
         writetable(currECG_T,[recDir '\AllRecReportECG.csv'],'WriteRowNames',true);
@@ -150,3 +155,9 @@ for iRec=recNo
         writetable(currECG_T,[recDir '\AllRecReportECG.csv'],'WriteMode','append','WriteRowNames',true);
     end
 end
+
+%%
+temp3=ismember(temp2(2:end),temp2(1:end-1));
+
+temp3=temp2(2:end)==temp2(1:end-1);
+
